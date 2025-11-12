@@ -4,7 +4,6 @@ import Input from '../../ui/Input';
 import { useSettings } from './useSetting';
 import Spinner from '../../ui/Spinner';
 import { useUpdateSetting } from './UseUpdateSetting';
-import { updateSetting } from '../../services/apiSettings';
 
 function UpdateSettingsForm() {
   const FormRow = styled.div`
