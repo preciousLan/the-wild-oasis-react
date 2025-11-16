@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { getCabins } from "../../services/apiCabins";
 import Spinner from "../../ui/Spinner"
 import CabinRow from "./CabinRow";
+import { useSearchParams } from "react-router-dom";
+import Empty from "../../ui/Empty";
 
 const Table = styled.div`
   border: 1px solid var(--color-grey-200);
@@ -37,8 +39,41 @@ const CabinTable = () => {
     queryFn: getCabins,
   });
 
+  const [searchParams] = useSearchParams();
+  if (isLoading) return <Spinner />;
+  if(!cabins.length) return <Empty resourceName="Cabins"/>
 
-  if (isLoading) return <Spinner />
+ 
+  //filter
+  const filterValue = searchParams.get("discount") || "all"
+
+
+  let filteredCabins;
+  if (filterValue === "all")
+    filteredCabins = cabins;
+  if (filterValue === "no-discount")
+    filteredCabins = cabins.filter((cabin) =>
+      cabin.discount === 0
+    );
+  if (filterValue === "with-discount") filteredCabins = cabins.filter((cabin) =>
+    cabin.discount > 0
+  );
+
+  //sorting
+ const sortBy = searchParams.get("sortBy") || "name-asc";
+const [field, direction] = sortBy.split("-");
+const modifier = direction === "asc" ? 1 : -1;
+
+const sortedCabins = filteredCabins.slice().sort((a, b) => {
+  // String sorting
+  if (typeof a[field] === "string") {
+    return a[field].localeCompare(b[field]) * modifier;
+  }
+
+  // Number sorting
+  return (a[field] - b[field]) * modifier;
+});
+
 
 
   return (
@@ -52,7 +87,7 @@ const CabinTable = () => {
 
         <div></div>
       </TableHeader>
-      {cabins.map((cabin)=> <CabinRow cabin={cabin} key={cabin.id}/>)}
+      {sortedCabins.map((cabin) => <CabinRow cabin={cabin} key={cabin.id} />)}
     </Table>
   )
 }
